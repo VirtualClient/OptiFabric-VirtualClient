@@ -4,6 +4,7 @@ import java.io.File;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 
+import net.minecraft.client.MinecraftClient;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -55,14 +56,13 @@ public abstract class MixinTitleScreen extends Screen {
 			case MISSING: //Errors relating to the OptiFine jar, link the mods folder
 			case CORRUPT_ZIP:
 			case INCOMPATIBLE:
-			case DUPLICATED:
-				actionButtonText = "Open mods folder";
+				actionButtonText = "Quit Game";
 				helpButtonText = "Open help";
 				action = help -> {
 					if (help) {
-						Util.getOperatingSystem().open("https://github.com/Chocohead/OptiFabric/blob/master/README.md");
+						Util.getOperatingSystem().open("https://virtualclient.gg/support/optifine");
 					} else {
-						Util.getOperatingSystem().open(new File(FabricLoader.getInstance().getGameDirectory(), "mods"));
+						MinecraftClient.getInstance().close();
 					}
 				};
 				break;
@@ -74,7 +74,7 @@ public abstract class MixinTitleScreen extends Screen {
 				helpButtonText = "Open issues";
 				action = help -> {
 					if (help) {
-						Util.getOperatingSystem().open("https://github.com/Chocohead/OptiFabric/issues");
+						Util.getOperatingSystem().open("https://virtualclient.gg/support/optifine");
 					} else if (stack != null) {
 						client.keyboard.setClipboard(stack);
 					} else {
@@ -85,7 +85,7 @@ public abstract class MixinTitleScreen extends Screen {
 			}
 			}
 
-			client.openScreen(new ConfirmScreen(action, Text.literal("There was an error loading OptiFabric!", Formatting.RED),
+			client.openScreen(new ConfirmScreen(action, Text.literal("There was an error loading Optifine!", Formatting.RED),
 					Text.literal(OptifabricError.getError()), Text.literal(helpButtonText, Formatting.GREEN), Text.literal(actionButtonText)));
 		}
 	}

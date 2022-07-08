@@ -3,16 +3,16 @@
   "id": "optifabric",
   "version": "${version}",
 
-  "name": "OptiFabric",
-  "description": "OptiFabric is a mod that loads OptiFine into Fabric",
+  "name": "VirtualClient Optifine-Support",
+  "description": "Adds support for Optifine to the VirtualClient. Based on the popular mod OptiFabric",
   "authors": [
     "Modmuss50",
-    "Chocohead"
+    "Chocohead",
+    "VirtualClient Team"
   ],
   "contact": {
-    "homepage": "https://www.curseforge.com/minecraft/mc-mods/optifabric",
-    "sources": "https://github.com/Chocohead/OptiFabric",
-    "issues": "https://github.com/Chocohead/OptiFabric/issues"
+    "sources": "https://github.com/VirtualClient/OptiFabric-VirtualClient",
+    "issues": "https://virtualclient.gg/support/optifine"
   },
   "mixins": [
     "optifabric.mixins.json"

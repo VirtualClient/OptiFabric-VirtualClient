@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.zip.ZipError;
@@ -12,6 +14,7 @@ import java.util.zip.ZipException;
 
 import com.google.gson.stream.JsonReader;
 
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
@@ -29,42 +32,21 @@ public class OptifineVersion {
 	public static JarType jarType;
 
 	public static File findOptifineJar() throws IOException {
-		@SuppressWarnings("deprecation")
-		File modsDir = new File(FabricLoader.getInstance().getGameDirectory(), "mods");
-		File[] mods = modsDir.listFiles();
+		Path virtualClientOptifine = FabricLoader.getInstance().getGameDir().resolve("VirtualClient")
+				.resolve("optifine-" + FabricLoaderImpl.INSTANCE.getGameProvider().getNormalizedGameVersion() + ".jar");
 
-		if (mods != null) {
-			File optifineJar = null;
-
-			for (File file : mods) {
-				if (!file.isDirectory() && "jar".equals(FilenameUtils.getExtension(file.getName())) && !file.getName().startsWith(".") && !file.isHidden()) {
-					JarType type = getJarType(file);
-					if (type.isError()) {
-						jarType = type;
-						throw new RuntimeException("An error occurred when trying to find the optifine jar: " + type.name());
-					}
-
-					if (type == JarType.OPTIFINE_MOD || type == JarType.OPTIFINE_INSTALLER) {
-						if (optifineJar != null) {
-							jarType = JarType.DUPLICATED;
-							OptifabricError.setError("Please ensure you only have 1 copy of OptiFine in the mods folder!\nFound: %s\n       %s", optifineJar, file);
-							throw new FileAlreadyExistsException("Multiple optifine jars: " + file.getName() + " and " + optifineJar.getName());
-						}
-
-						jarType = type;
-						optifineJar = file;
-					}
-				}
-			}
-
-			if (optifineJar != null) {
-				return optifineJar;
-			}
+		if(!Files.exists(virtualClientOptifine)) {
+			OptifabricError.setError("Could not find optifine jar");
+			jarType = JarType.MISSING;
+			throw new FileNotFoundException("Could not find optifine jar");
 		}
 
-		jarType = JarType.MISSING;
-		OptifabricError.setError("OptiFabric could not find the Optifine jar in the mods folder:\n%s", modsDir);
-		throw new FileNotFoundException("Could not find optifine jar");
+		jarType = getJarType(virtualClientOptifine.toFile());
+		if (jarType.isError()) {
+			throw new RuntimeException("An error occurred when trying to find the optifine jar: " + jarType.name());
+		}
+
+		return virtualClientOptifine.toFile();
 	}
 
 	private static JarType getJarType(File file) throws IOException {
@@ -144,7 +126,6 @@ public class OptifineVersion {
 		OPTIFINE_INSTALLER(false),
 		INCOMPATIBLE(true),
 		CORRUPT_ZIP(true),
-		DUPLICATED(true),
 		INTERNAL_ERROR(true),
 		SOMETHING_ELSE(false);
 

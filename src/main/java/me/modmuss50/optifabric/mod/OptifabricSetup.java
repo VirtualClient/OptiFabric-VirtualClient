@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.base.MoreObjects;
 
+import net.fabricmc.loader.impl.FabricLoaderImpl;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.objectweb.asm.ClassWriter;
