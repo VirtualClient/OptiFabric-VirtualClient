@@ -102,6 +102,23 @@ public class OptifabricSetup implements Runnable {
 				}).isPresent();
 			}
 		};
+		BooleanSupplier setupFogPresent = new FeatureFinder() {
+			@Override
+			protected boolean isPresent() {
+				return injector.predictFuture(RemappingUtils.getClassName("class_758")).filter(node -> {//BackgroundRenderer
+					//(Camera, BackgroundRenderer$FogType)
+					String desc = RemappingUtils.mapMethodDescriptor("(Lnet/minecraft/class_4184;Lnet/minecraft/class_758$class_4596;FZF)V");
+
+					for (MethodNode method : node.methods) {
+						if ("setupFog".equals(method.name) && desc.equals(method.desc)) {
+							return true;
+						}
+					}
+
+					return false;
+				}).isPresent();
+			}
+		};
 
 		if (isPresent("fabric-renderer-api-v1")) {
 			if (isPresent("minecraft", ">=1.19")) {
@@ -149,7 +166,18 @@ public class OptifabricSetup implements Runnable {
 
 		if (isPresent("fabric-renderer-indigo")) {
 			if (isPresent("minecraft", ">=1.19")) {
-				Mixins.addConfiguration("optifabric.compat.indigo.new-mixins.json");
+				injector.predictFuture(RemappingUtils.getClassName("class_776")).ifPresent(node -> {//BlockRenderManager
+					String desc = RemappingUtils.getClassName("class_1921").concat(";)V"); //RenderLayer
+
+					for (MethodNode method : node.methods) {
+						if ("renderBatched".equals(method.name) && method.desc.endsWith(desc)) {
+							Mixins.addConfiguration("optifabric.compat.indigo.newer-mixins.json");							
+							return;
+						}
+					}
+
+					Mixins.addConfiguration("optifabric.compat.indigo.new-mixins.json");
+				});
 			} else {
 				Mixins.addConfiguration("optifabric.compat.indigo.mixins.json");
 
@@ -239,12 +267,22 @@ public class OptifabricSetup implements Runnable {
 		}
 
 
-		if (isPresent("apoli", ">=2.2.2")) {
+		if (isPresent("apoli", ">=2.3.1")) {
+			Mixins.addConfiguration("optifabric.compat.apoli-newerer.mixins.json");
+
+			if (setupFogPresent.getAsBoolean()) {
+				Mixins.addConfiguration("optifabric.compat.apoli-newerer.extra-mixins.json");
+			}
+		} else if (isPresent("apoli", ">=2.2.2")) {
 			Mixins.addConfiguration("optifabric.compat.apoli-newer.mixins.json");
 		} else if (isPresent("apoli", ">=2.0")) {
 			Mixins.addConfiguration("optifabric.compat.apoli-new.mixins.json");
 		} else if (isPresent("apoli")) {
 			Mixins.addConfiguration("optifabric.compat.apoli.mixins.json");
+		}
+
+		if (isPresent("additionalentityattributes") && setupFogPresent.getAsBoolean()) {
+			Mixins.addConfiguration("optifabric.compat.additional-entity-attributes.mixins.json");
 		}
 
 		if (isPresent("staffofbuilding")) {
@@ -305,7 +343,7 @@ public class OptifabricSetup implements Runnable {
 
 		if (isPresent("charm", ">=2.0 <2.1")) {
 			Mixins.addConfiguration("optifabric.compat.charm-older.mixins.json");
-		} else if (isPresent("charm", ">=2.1  <3.0")) {
+		} else if (isPresent("charm", ">=2.1 <3.0")) {
 			Mixins.addConfiguration("optifabric.compat.charm-old.mixins.json");
 
 			if (isPresent("charm", ">=2.2.2")) {
@@ -321,8 +359,10 @@ public class OptifabricSetup implements Runnable {
 					}
 				});
 			}	
-		} else if (isPresent("charm", ">=3.0")) {
+		} else if (isPresent("charm", ">=3.0 <4.0")) {
 			Mixins.addConfiguration("optifabric.compat.charm.mixins.json");
+		} else if (isPresent("charm", ">=4.0")) {
+			Mixins.addConfiguration("optifabric.compat.charm-new.mixins.json");
 		}
 
 		if (isPresent("voxelmap")) {
@@ -443,6 +483,10 @@ public class OptifabricSetup implements Runnable {
 
 		if (isPresent("zoomify")) {
 			Mixins.addConfiguration("optifabric.compat.zoomify.mixins.json");
+		}
+
+		if (isPresent("borderlessmining", ">=1.1.3")) {
+			Mixins.addConfiguration("optifabric.compat.borderlessmining.mixins.json");
 		}
 
 		if (isPresent("fabricloader", ">=0.12.3")) {
