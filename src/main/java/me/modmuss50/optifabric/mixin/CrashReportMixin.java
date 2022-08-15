@@ -47,9 +47,6 @@ abstract class CrashReportMixin {
 					case INTERNAL_ERROR:
 						return "Error whilst searching";
 
-					case DUPLICATED:
-						return "Multiple valid jars found";
-
 					case OPTIFINE_INSTALLER:
 						return "Valid OptiFine installer";
 
