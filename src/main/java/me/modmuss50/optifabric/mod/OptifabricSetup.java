@@ -289,10 +289,14 @@ public class OptifabricSetup implements Runnable {
 			Mixins.addConfiguration("optifabric.compat.staffofbuilding.mixins.json");
 		}
 
-		if (isPresent("sandwichable", ">=1.2-alpha1")) {
-			Mixins.addConfiguration("optifabric.compat.sandwichable.mixins.json");
-		} else if (isPresent("sandwichable")) {
-			Mixins.addConfiguration("optifabric.compat.sandwichable-old.mixins.json");
+		if (isPresent("sandwichable")) {
+			if (isPresent("sandwichable", "<=1.2-rc4 >=1.2-alpha1")) {
+				Mixins.addConfiguration("optifabric.compat.sandwichable.mixins.json");
+			} else if (isPresent("sandwichable", "<1.2-alpha1")) {
+				Mixins.addConfiguration("optifabric.compat.sandwichable-old.mixins.json");
+			} else {//Versions like 1.3.a aren't SemVer, so won't hit either case above
+				Mixins.addConfiguration("optifabric.compat.sandwichable.new-mixins.json");
+			}
 		}
 
 		if (isPresent("astromine", "<1.6")) {//Only needed for the 1.16.1 versions
@@ -438,8 +442,12 @@ public class OptifabricSetup implements Runnable {
 			Mixins.addConfiguration("optifabric.compat.smooth-chunks.mixins.json");
 		}
 
-		if (isPresent("enhancedcelestials")) {
-			Mixins.addConfiguration("optifabric.compat.enhancedcelestials.mixins.json");
+		if (isPresent("enhancedcelestials") && isPresent("minecraft", "<1.19")) {
+			if (isPresent("enhancedcelestials", ">=2.0.0")) {
+				Mixins.addConfiguration("optifabric.compat.enhancedcelestials.new-mixins.json");
+			} else {
+				Mixins.addConfiguration("optifabric.compat.enhancedcelestials.mixins.json");
+			}
 		}
 
 		if (isPresent("cullparticles") && particlesPresent.getAsBoolean()) {
